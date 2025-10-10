@@ -6,26 +6,45 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [screens, setScreens] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  type User = {
+  id: string;
+  email?: string;
+};
+
+type Screen = {
+  id: string;
+  name: string;
+  user_id: string;
+};
+
+const [user, setUser] = useState<User | null>(null);
+const [screens, setScreens] = useState<Screen[]>([]);
+
 
   // Your admin email
   const ADMIN_EMAIL = "ipessanha@ymail.com";
 
   // Load user on mount
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
-        router.push("/");
-      } else {
-        setUser(data.user);
-        fetchScreens(data.user.id);
-      }
-    };
-    getUser();
-  }, [router]);
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser();
+    const supaUser = data?.user;
+
+    if (!supaUser) {
+      router.push("/");
+    } else {
+      setUser({
+        id: supaUser.id,
+        email: supaUser.email ?? undefined,
+      });
+      fetchScreens(supaUser.id);
+    }
+  };
+  getUser();
+}, [router]);
+
 
   // Fetch screens from Supabase
   const fetchScreens = async (userId: string) => {
