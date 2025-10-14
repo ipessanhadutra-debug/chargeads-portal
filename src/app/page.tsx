@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 
@@ -8,58 +8,95 @@ export default function Home() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        router.push('/dashboard')
+      }
+    }
+    checkSession()
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setLoading(true)
 
-    // ✅ Login with Supabase
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
+    setLoading(false)
+
     if (error) {
       setError(error.message)
     } else {
-      router.push('/dashboard') // ✅ redirect to dashboard
+      router.push('/dashboard')
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4">
+      {/* Logo */}
+      <div className="mb-10">
+        <img
+          src="/chargeads-logo.png" // 👈 put your logo in /public/chargeads-logo.png
+          alt="ChargeAds Logo"
+          className="mx-auto w-64"
+        />
+      </div>
+
+      {/* Login Form */}
       <form
         onSubmit={handleLogin}
-        className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm space-y-4"
+        className="w-full max-w-xs flex flex-col space-y-4"
       >
-        <h1 className="text-2xl font-bold text-center">Login</h1>
+        <div>
+          <label htmlFor="email" className="block mb-1 font-semibold">
+            Login:
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-3 py-2 rounded-full bg-white text-black outline-none focus:ring-2 focus:ring-yellow-400"
+          />
+        </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full px-3 py-2 border rounded"
-        />
+        <div>
+          <label htmlFor="password" className="block mb-1 font-semibold">
+            Password:
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-3 py-2 rounded-full bg-white text-black outline-none focus:ring-2 focus:ring-yellow-400"
+          />
+        </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full px-3 py-2 border rounded"
-        />
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm text-center">{error}</p>
+        )}
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          disabled={loading}
+          className="bg-white text-black font-semibold py-2 rounded-full hover:bg-yellow-400 transition disabled:opacity-50"
         >
-          Sign In
+          {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
     </div>
