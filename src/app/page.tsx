@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -45,11 +46,13 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4">
       {/* Logo */}
       <div className="mb-10">
-        <img
-          src="/chargeads-logo.png" // 👈 put your logo in /public/chargeads-logo.png
-          alt="ChargeAds Logo"
-          className="mx-auto w-64"
-        />
+        <Image
+         src="/chargeads-logo.png"
+         alt="ChargeAds Logo"
+         width={256}
+         height={80}
+         className="mb-6"
+         />
       </div>
 
       {/* Login Form */}

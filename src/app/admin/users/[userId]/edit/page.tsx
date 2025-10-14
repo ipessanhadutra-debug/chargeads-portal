@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -11,7 +12,7 @@ export default function EditUserPage() {
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('••••••••') // hidden
+  const [password] = useState('••••••••') // hidden
   const [screens, setScreens] = useState<number>(1)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -60,10 +61,15 @@ export default function EditUserPage() {
 
       alert('✅ User updated successfully!')
       router.push('/admin/users')
-    } catch (error: any) {
-      console.error(error)
-      alert('❌ Error updating user: ' + error.message)
-    } finally {
+    } catch (error) {
+  if (error instanceof Error) {
+    console.error(error)
+    alert('❌ Error updating user: ' + error.message)
+  } else {
+    console.error(error)
+    alert('❌ An unknown error occurred')
+  }
+} finally {
       setSaving(false)
     }
   }
@@ -73,9 +79,11 @@ export default function EditUserPage() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center py-8 px-4">
       {/* Logo */}
-      <img
+      <Image
         src="/chargeads-logo.png"
         alt="ChargeAds Logo"
+        width={256}
+        height={80}
         className="w-64 mb-6"
       />
 

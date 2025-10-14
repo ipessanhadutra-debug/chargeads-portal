@@ -54,10 +54,15 @@ export default function NewUserPage() {
 
       alert('✅ New user and screens created successfully!')
       router.push('/admin/users')
-    } catch (error: any) {
-      console.error(error)
-      alert('❌ Error creating user: ' + error.message)
-    } finally {
+    } catch (error) {
+  if (error instanceof Error) {
+    console.error(error)
+    alert('❌ Error updating user: ' + error.message)
+  } else {
+    console.error(error)
+    alert('❌ An unknown error occurred')
+  }
+} finally {
       setLoading(false)
     }
   }

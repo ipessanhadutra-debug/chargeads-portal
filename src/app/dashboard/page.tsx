@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -40,7 +41,13 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center py-10 px-4">
         {/* Logo */}
-        <img src="/chargeads-logo.png" alt="ChargeAds Logo" className="w-64 mb-16" />
+        <Image
+          src="/chargeads-logo.png"
+          alt="ChargeAds Logo"
+          width={256}
+          height={80}
+          className="mb-6"
+         />
 
         {/* Buttons */}
         <div className="flex flex-col space-y-4 w-full max-w-xs">
