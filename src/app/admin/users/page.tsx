@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -43,7 +44,13 @@ export default function AdminUsersPage() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center py-8 px-4">
-      <img src="/chargeads-logo.png" alt="ChargeAds Logo" className="w-64 mb-6" />
+      <Image
+         src="/chargeads-logo.png"
+         alt="ChargeAds Logo"
+         width={256}
+         height={80}
+         className="mb-6"
+        />
 
       <div className="w-full max-w-4xl">
         <div className="bg-white text-black py-2 px-4 w-40 font-semibold rounded-t">User List</div>
