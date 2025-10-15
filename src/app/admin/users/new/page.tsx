@@ -1,13 +1,12 @@
 'use client'
 
-import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
 
 export default function NewUserPage() {
   const router = useRouter()
-
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,41 +24,38 @@ export default function NewUserPage() {
         password,
       })
 
-      if (signUpError) throw signUpError
-      if (!signUpData?.user) throw new Error('User not created.')
+      if (signUpError) throw new Error(signUpError.message)
+      const authUser = signUpData.user
+      if (!authUser) throw new Error('Failed to create auth user.')
 
-      const newUserId = signUpData.user.id
+      // 2️⃣ Insert into your "users" table with Auth ID
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: authUser.id,   // 👈 this is crucial to avoid duplicate pkey
+            email,
+            name,
+          },
+        ])
 
-      // 2️⃣ Insert into public.users table
-      const { error: insertError } = await supabase.from('users').insert([
-        {
-          id: newUserId,
-          email,
-          max_screens: screens,
-        },
-      ])
+      if (insertError) throw new Error(insertError.message)
 
-      if (insertError) throw insertError
+      // 3️⃣ Optionally create screens for this user
+      for (let i = 1; i <= screens; i++) {
+        const screenName = `Screen ${i}`
+        const { error: screenError } = await supabase
+          .from('screens')
+          .insert([{ name: screenName, user_id: authUser.id }])
 
-      // 3️⃣ Automatically create screens for the new user
-      const screenRecords = Array.from({ length: screens }, (_, i) => ({
-        user_id: newUserId,
-        name: `Screen ${i + 1}`,
-      }))
+        if (screenError) throw new Error(screenError.message)
+      }
 
-      const { error: screenError } = await supabase
-        .from('screens')
-        .insert(screenRecords)
-
-      if (screenError) throw screenError
-
-      alert('✅ New user and screens created successfully!')
+      alert('✅ User created successfully!')
       router.push('/admin/users')
-    } catch (error) {
-  console.error("🚨 Full error object:", error)
-  alert('❌ Error creating user: ' + JSON.stringify(error))
-}
- finally {
+    } catch (err: any) {
+      alert(`❌ Error creating user: ${err.message}`)
+    } finally {
       setLoading(false)
     }
   }
@@ -72,28 +68,24 @@ export default function NewUserPage() {
         alt="ChargeAds Logo"
         width={256}
         height={80}
-        className="w-64 mb-6"
+        className="mb-8"
       />
-
-      {/* Header tab */}
-      <div className="w-full max-w-2xl">
-        <div className="bg-white text-black py-2 px-4 w-40 font-semibold rounded-t">
-          New User
-        </div>
-      </div>
 
       {/* Form */}
       <form
         onSubmit={handleCreateUser}
-        className="w-full max-w-2xl bg-white text-black p-6 rounded-b space-y-4"
+        className="bg-white text-black p-6 rounded w-full max-w-md space-y-4"
       >
+        <h2 className="text-lg font-bold mb-4">New User</h2>
+
         <div>
           <label className="block font-semibold mb-1">Name:</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border px-3 py-2"
+            required
+            className="w-full border rounded p-2"
           />
         </div>
 
@@ -104,7 +96,7 @@ export default function NewUserPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full border px-3 py-2"
+            className="w-full border rounded p-2"
           />
         </div>
 
@@ -115,7 +107,7 @@ export default function NewUserPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full border px-3 py-2"
+            className="w-full border rounded p-2"
           />
         </div>
 
@@ -124,26 +116,26 @@ export default function NewUserPage() {
           <input
             type="number"
             value={screens}
-            onChange={(e) => setScreens(Number(e.target.value))}
             min={1}
-            className="w-full border px-3 py-2"
+            onChange={(e) => setScreens(Number(e.target.value))}
+            className="w-full border rounded p-2"
           />
         </div>
 
-        <div className="flex justify-between mt-6">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-white text-black px-6 py-2 font-semibold rounded hover:bg-yellow-400 transition"
-          >
-            {loading ? 'Creating...' : 'Create'}
-          </button>
+        <div className="flex justify-between items-center pt-4">
           <button
             type="button"
             onClick={() => router.push('/admin/users')}
-            className="bg-white text-black px-6 py-2 font-semibold rounded hover:bg-gray-300 transition"
+            className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
           >
             Back
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-600 disabled:opacity-50"
+          >
+            {loading ? 'Creating...' : 'Create'}
           </button>
         </div>
       </form>
