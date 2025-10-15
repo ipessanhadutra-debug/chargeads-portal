@@ -10,45 +10,44 @@ export default function NewUserPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [screens, setScreens] = useState<number>(1)
+  const [screens, setScreens] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
     setLoading(true)
 
     try {
-      // 1️⃣ Create user in Supabase Auth
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-      })
+      // STEP 1️⃣ - Create user in Supabase Auth
+      const { data: authData, error: authError } =
+        await supabase.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+        })
 
-      if (signUpError) throw new Error(signUpError.message)
-      const authUser = signUpData.user
-      if (!authUser) throw new Error('Failed to create auth user.')
+      if (authError || !authData?.user) {
+        throw new Error(authError?.message || 'Failed to create auth user')
+      }
 
-      // 2️⃣ Insert into your "users" table with Auth ID
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: authUser.id,   // 👈 this is crucial to avoid duplicate pkey
-            email,
-            name,
-          },
-        ])
+      const userId = authData.user.id
 
-      if (insertError) throw new Error(insertError.message)
+      // STEP 2️⃣ - Insert into your public.users table
+      const { error: insertError } = await supabase.from('users').insert([
+        {
+          id: userId,
+          email,
+          name, // ✅ make sure 'name' column exists in your users table
+          max_screens: screens,
+        },
+      ])
 
-      // 3️⃣ Optionally create screens for this user
-      for (let i = 1; i <= screens; i++) {
-        const screenName = `Screen ${i}`
-        const { error: screenError } = await supabase
-          .from('screens')
-          .insert([{ name: screenName, user_id: authUser.id }])
-
-        if (screenError) throw new Error(screenError.message)
+      if (insertError) {
+        // 🛑 ROLLBACK - Delete auth user if insert fails
+        await supabase.auth.admin.deleteUser(userId)
+        throw new Error(insertError.message)
       }
 
       alert('✅ User created successfully!')
@@ -61,15 +60,15 @@ export default function NewUserPage() {
       : typeof err === 'string'
       ? err
       : JSON.stringify(err)
-       alert(`❌ Error creating user: ${message}`)
-      } finally {
-          setLoading(false)
-      }
+  alert(`❌ Error creating user: ${message}`)
+} finally {
+  setLoading(false)
+}
 
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center py-8 px-4">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center py-10 px-4">
       {/* Logo */}
       <Image
         src="/chargeads-logo.png"
@@ -79,21 +78,22 @@ export default function NewUserPage() {
         className="mb-8"
       />
 
-      {/* Form */}
       <form
         onSubmit={handleCreateUser}
-        className="bg-white text-black p-6 rounded w-full max-w-md space-y-4"
+        className="bg-white text-black p-6 rounded shadow w-full max-w-md space-y-4"
       >
-        <h2 className="text-lg font-bold mb-4">New User</h2>
+        <h2 className="text-xl font-bold mb-4 text-center">New User</h2>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <div>
           <label className="block font-semibold mb-1">Name:</label>
           <input
             type="text"
+            className="w-full border p-2 rounded"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="w-full border rounded p-2"
           />
         </div>
 
@@ -101,10 +101,10 @@ export default function NewUserPage() {
           <label className="block font-semibold mb-1">E-mail:</label>
           <input
             type="email"
+            className="w-full border p-2 rounded"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full border rounded p-2"
           />
         </div>
 
@@ -112,10 +112,10 @@ export default function NewUserPage() {
           <label className="block font-semibold mb-1">Password:</label>
           <input
             type="password"
+            className="w-full border p-2 rounded"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full border rounded p-2"
           />
         </div>
 
@@ -123,25 +123,29 @@ export default function NewUserPage() {
           <label className="block font-semibold mb-1">Screens:</label>
           <input
             type="number"
+            className="w-full border p-2 rounded"
             value={screens}
+            onChange={(e) => setScreens(parseInt(e.target.value, 10))}
             min={1}
-            onChange={(e) => setScreens(Number(e.target.value))}
-            className="w-full border rounded p-2"
           />
         </div>
 
-        <div className="flex justify-between items-center pt-4">
+        <div className="flex justify-between mt-4">
           <button
             type="button"
-            onClick={() => router.push('/admin/users')}
-            className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+            onClick={() => router.back()}
+            className="bg-gray-400 text-black py-2 px-4 rounded hover:bg-gray-500"
           >
             Back
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-600 disabled:opacity-50"
+            className={`py-2 px-4 rounded ${
+              loading
+                ? 'bg-yellow-400 cursor-not-allowed'
+                : 'bg-yellow-500 hover:bg-yellow-600'
+            }`}
           >
             {loading ? 'Creating...' : 'Create'}
           </button>
