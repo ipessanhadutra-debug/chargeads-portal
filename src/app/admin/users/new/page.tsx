@@ -53,8 +53,8 @@ export default function NewUserPage() {
 
       alert('✅ User created successfully!')
       router.push('/admin/users')
-    } catch (err: any) {
-      alert(`❌ Error creating user: ${err.message}`)
+    } catch (error) {
+      alert('❌ Error creating user: ' + JSON.stringify(error))
     } finally {
       setLoading(false)
     }
