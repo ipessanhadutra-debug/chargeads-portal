@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -55,14 +56,10 @@ export default function NewUserPage() {
       alert('✅ New user and screens created successfully!')
       router.push('/admin/users')
     } catch (error) {
-  if (error instanceof Error) {
-    console.error(error)
-    alert('❌ Error updating user: ' + error.message)
-  } else {
-    console.error(error)
-    alert('❌ An unknown error occurred')
-  }
-} finally {
+  console.error("🚨 Full error object:", error)
+  alert('❌ Error creating user: ' + JSON.stringify(error))
+}
+ finally {
       setLoading(false)
     }
   }
@@ -70,9 +67,11 @@ export default function NewUserPage() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center py-8 px-4">
       {/* Logo */}
-      <img
+      <Image
         src="/chargeads-logo.png"
         alt="ChargeAds Logo"
+        width={256}
+        height={80}
         className="w-64 mb-6"
       />
 
