@@ -1,19 +1,22 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // must be set in Vercel
-)
-console.log('URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-console.log('SERVICE ROLE KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
-
-
 export async function POST(req: Request) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  console.log('URL:', supabaseUrl)
+  console.log('SERVICE ROLE KEY exists:', !!serviceRoleKey)
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase URL or Service Key')
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
+
   try {
     const { email, password, name, screens } = await req.json()
 
-    // 1️⃣ Create Auth user
     const { data: user, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -24,7 +27,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: authError.message }, { status: 400 })
     }
 
-    // 2️⃣ Insert into your public users table
     const { error: dbError } = await supabaseAdmin.from('users').insert([
       { id: user.user.id, email, name, screens },
     ])
