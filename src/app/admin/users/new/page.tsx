@@ -53,11 +53,19 @@ export default function NewUserPage() {
 
       alert('✅ User created successfully!')
       router.push('/admin/users')
-    } catch (error) {
-      alert('❌ Error creating user: ' + JSON.stringify(error))
-    } finally {
-      setLoading(false)
-    }
+    } catch (err) {
+  console.error('❌ Error creating user:', err)
+  const message =
+    err instanceof Error
+      ? err.message
+      : typeof err === 'string'
+      ? err
+      : JSON.stringify(err)
+       alert(`❌ Error creating user: ${message}`)
+      } finally {
+          setLoading(false)
+      }
+
   }
 
   return (
