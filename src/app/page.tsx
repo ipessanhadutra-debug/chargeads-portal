@@ -36,7 +36,7 @@ export default function Home() {
     setLoading(false)
 
     if (error) {
-      setError(error.message)
+      setError('Invalid login credentials')
     } else {
       router.push('/dashboard')
     }
@@ -47,12 +47,12 @@ export default function Home() {
       {/* Logo */}
       <div className="mb-10">
         <Image
-         src="/chargeads-logo.png"
-         alt="ChargeAds Logo"
-         width={256}
-         height={80}
-         className="mb-6"
-         />
+          src="/chargeads-logo.png"
+          alt="ChargeAds Logo"
+          width={256}
+          height={80}
+          className="mb-6"
+        />
       </div>
 
       {/* Login Form */}
@@ -90,9 +90,7 @@ export default function Home() {
           />
         </div>
 
-        {error && (
-          <p className="text-red-500 text-sm text-center">{error}</p>
-        )}
+        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
         <button
           type="submit"
@@ -101,6 +99,18 @@ export default function Home() {
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
+
+        {/* 👇 Add this */}
+        <p className="text-center text-sm mt-3">
+          Don’t have an account?{' '}
+          <button
+            type="button"
+            onClick={() => router.push('/signup')}
+            className="text-yellow-400 hover:underline"
+          >
+            Sign up
+          </button>
+        </p>
       </form>
     </div>
   )
