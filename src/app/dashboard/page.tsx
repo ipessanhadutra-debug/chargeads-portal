@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const [screens, setScreens] = useState<Screen[]>([])
   const [loading, setLoading] = useState(true)
 
-  const ADMIN_EMAIL = 'ipessanha@ymail.com' // 👈 your admin email
+  const ADMIN_EMAIL = 'ipessanha@ymail.com' // 👑 Your admin email
 
   useEffect(() => {
     const loadUser = async () => {
@@ -61,18 +61,18 @@ export default function DashboardPage() {
   // 👑 ADMIN VIEW
   if (email === ADMIN_EMAIL) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center py-10 px-4">
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
         {/* Logo */}
         <Image
           src="/chargeads-logo.png"
           alt="ChargeAds Logo"
           width={256}
           height={80}
-          className="mb-6"
+          className="mb-8"
         />
 
         {/* Buttons */}
-        <div className="flex flex-col space-y-4 w-full max-w-xs">
+        <div className="flex flex-col gap-4 w-full max-w-xs">
           <button
             onClick={() => router.push('/admin/users')}
             className="bg-white text-black font-semibold py-3 rounded hover:bg-yellow-400 transition"
@@ -92,42 +92,44 @@ export default function DashboardPage() {
 
   // 👤 CUSTOMER VIEW
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center py-10 px-4">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
       {/* Logo */}
       <Image
         src="/chargeads-logo.png"
         alt="ChargeAds Logo"
         width={256}
         height={80}
-        className="mb-10"
+        className="mb-12"
       />
 
       {/* Screens Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      <div className="flex flex-wrap justify-center gap-12 mb-12">
         {screens.length === 0 ? (
-          <p>No screens found.</p>
+          <p className="text-lg text-gray-300">No screens found.</p>
         ) : (
-          screens.map((screen) => (
+          screens.map((screen, index) => (
             <div
               key={screen.id}
               onClick={() => router.push(`/dashboard/screens/${screen.id}`)}
               className="flex flex-col items-center cursor-pointer group"
             >
               <Image
-                src="/tv-icon.png" // ⚠️ Make sure this icon exists in /public
-                alt="Screen Icon"
+                src="/tv-icon.png" // ⚡ Make sure this exists in /public
+                alt={`Screen ${index + 1}`}
                 width={100}
                 height={100}
-                className="group-hover:scale-105 transition"
+                className="group-hover:scale-110 transition-transform"
               />
-              <p className="mt-2 font-semibold">{screen.name}</p>
+              <p className="mt-3 font-semibold text-white">
+                {screen.name || `Screen ${index + 1}`}
+              </p>
             </div>
           ))
         )}
       </div>
 
-      {/* Actions */}
-      <div className="mt-10 flex flex-col space-y-3 w-full max-w-xs">
+      {/* Action Buttons */}
+      <div className="flex flex-col gap-3 w-full max-w-xs">
         <button
           onClick={() => router.push('/change-password')}
           className="bg-white text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
