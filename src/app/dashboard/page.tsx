@@ -132,66 +132,85 @@ export default function DashboardPage() {
     )
   }
 
-  // 👤 CUSTOMER VIEW
-  return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center py-10 px-4">
-      {/* Logo */}
-      <Image
-        src="/chargeads-logo.png"
-        alt="ChargeAds Logo"
-        width={256}
-        height={80}
-        className="mb-10"
-      />
+ // 👤 CUSTOMER VIEW
+return (
+  <div className="min-h-screen bg-black text-white flex flex-col items-center py-10 px-4">
+    {/* Logo */}
+    <Image
+      src="/chargeads-logo.png"
+      alt="ChargeAds Logo"
+      width={256}
+      height={80}
+      className="mb-10"
+    />
 
-      {/* Screens Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-10">
-        {screens.length === 0 ? (
-          <p>No screens found.</p>
-        ) : (
-          screens.map((screen) => (
-            <div
-              key={screen.id}
-              onClick={() => router.push(`/dashboard/screens/${screen.id}`)}
-              className="flex flex-col items-center cursor-pointer group"
-            >
-              <Image
-                src="/tv-icon.png"
-                alt="Screen Icon"
-                width={100}
-                height={100}
-                className="group-hover:scale-105 transition"
-              />
-              <p className="mt-2 font-semibold">{screen.name}</p>
-            </div>
-          ))
-        )}
-      </div>
+    {/* Screens Grid */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-10">
+      {screens.length === 0 ? (
+        <p>No screens found.</p>
+      ) : (
+        screens.map((screen) => (
+          <div
+            key={screen.id}
+            onClick={() => router.push(`/dashboard/screens/${screen.id}`)}
+            className="flex flex-col items-center cursor-pointer group"
+          >
+            <Image
+              src="/tv-icon.png"
+              alt="Screen Icon"
+              width={100}
+              height={100}
+              className="group-hover:scale-105 transition"
+            />
+            <p className="mt-2 font-semibold">{screen.name}</p>
+          </div>
+        ))
+      )}
+    </div>
 
-      {/* Add Screen Button */}
+    {/* Only show Add Screen button if under max_screens */}
+    {screens.length < (userRecord?.max_screens ?? 0) && (
       <button
-        onClick={handleAddScreen}
+        onClick={async () => {
+          const name = prompt('Enter a name for your new screen:')
+          if (!name) return
+
+          const { error } = await supabase.from('screens').insert([
+            {
+              user_id: userRecord?.id,
+              name,
+            },
+          ])
+
+          if (error) {
+            alert('Error adding screen: ' + error.message)
+          } else {
+            alert('✅ Screen added successfully!')
+            window.location.reload()
+          }
+        }}
         className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 px-6 rounded-full transition mb-4"
       >
         + Add Screen
       </button>
+    )}
 
-      {/* Actions */}
-      <div className="flex flex-col space-y-3 w-full max-w-xs">
-        <button
-          onClick={() => router.push('/change-password')}
-          className="bg-white text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
-        >
-          Change Password
-        </button>
+    {/* Actions */}
+    <div className="flex flex-col space-y-3 w-full max-w-xs">
+      <button
+        onClick={() => router.push('/change-password')}
+        className="bg-white text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
+      >
+        Change Password
+      </button>
 
-        <button
-          onClick={handleLogout}
-          className="bg-white text-black font-semibold py-2 rounded hover:bg-red-500 hover:text-white transition"
-        >
-          Logout
-        </button>
-      </div>
+      <button
+        onClick={handleLogout}
+        className="bg-white text-black font-semibold py-2 rounded hover:bg-red-500 hover:text-white transition"
+      >
+        Logout
+      </button>
     </div>
-  )
+  </div>
+)
 }
