@@ -30,7 +30,7 @@ export default function SignupPage() {
     } else {
       setMessage('✅ Account created! Redirecting to login...')
       setTimeout(() => {
-        router.push('/login')
+        router.push('/')
       }, 2000)
     }
   }
